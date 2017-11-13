@@ -1,6 +1,9 @@
 #ifndef ISA_ASM_H
 #define ISA_ASM_H
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define MAX_LINE_LEN 500
 #define MAX_LABEL_LEN 50

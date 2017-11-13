@@ -1,6 +1,4 @@
 #include "asm.h"
-#include <stdio.h>
-#include <string.h>
 
 //Returns -1 if failed
 int calc_opcode(char* str){
@@ -122,7 +120,6 @@ int assembler(char* asm_prog_path, char* output_path){
     int rt = 0;
     int imm = 0;
     int instruction;
-
     asm_prog = fopen(asm_prog_path, "r");
     if (asm_prog == NULL){
         //TODO: HANDLE ERROR !!!!!!!!!!!!!!!!!!!!!
@@ -133,45 +130,41 @@ int assembler(char* asm_prog_path, char* output_path){
     }
 
     // TODO: LABELS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     while (fgets(line, MAX_LINE_LEN, asm_prog) != NULL){
-        str = strtok(line, " \t\r\n");
+        str = strtok(line, " \t\r\n,");
         if (str == NULL){
             // TODO: HANDLE ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
         //TODO: CHECK IF IT'S A LABEL BEFORE CONTINUING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         op_code = calc_opcode(str);
-        str = strtok(NULL, " \t\r\n");
+        str = strtok(NULL, " \t\r\n,");
         if (str == NULL){
             // TODO: HANDLE ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
         rd = calc_register(str);
-        str = strtok(NULL, " \t\r\n");
+        str = strtok(NULL, " \t\r\n,");
         if (str == NULL){
             // TODO: HANDLE ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
         rs = calc_register(str);
-        str = strtok(NULL, " \t\r\n");
+        str = strtok(NULL, " \t\r\n,");
         if (str == NULL){
             // TODO: HANDLE ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
         rt = calc_register(str);
-        str = strtok(NULL, " \t\r\n");
+        str = strtok(NULL, " \t\r\n,");
         if (str == NULL){
             // TODO: HANDLE ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
-        imm = calc_register(str);
+        imm = atoi(str);
 
         op_code = op_code << 28;
         rd = rd << 24;
         rs = rs << 20;
         rt = rt << 16;
-        instruction = (op_code | rd | rs | rt | imm);
-
+        instruction = op_code + rd + rs + rt + imm;
         //TODO: DELETE THIS PRINTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //PRINT TO STDOUT JUST FOR TESTS
-        printf("%x", instruction);
-
+        printf("%.8x\n", instruction);
     }
 
 }
