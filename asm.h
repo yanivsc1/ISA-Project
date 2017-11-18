@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "linked_list.h"
+
 #define MAX_LINE_LEN 500
 #define MAX_LABEL_LEN 50
 
@@ -22,10 +24,14 @@ typedef enum registers{
     GP, SP, FP, RA
 }REGISTER;
 
-int assembler(char* asm_prog_path, char* output_path);
+int assembler(char* input_path, char* output_path);
 
 int calc_opcode(char* str);
 
 int calc_register(char* str);
+
+List* create_label_list(char* input_path);
+
+int calc_imm(char* imm_str, List* label_list);
 
 #endif //ISA_ASM_H
