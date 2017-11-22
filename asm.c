@@ -123,22 +123,22 @@ List* create_label_list(char* input_path){
     }
     label_list = create_list();
     while (fgets(line, MAX_LINE_LEN, input_file) != NULL) {
+        if (line[0] == '\n'){
+            continue;
+        }
         line_num++;
         str = strtok(line, " \t\r\n,");
         if (str == NULL) {
-            printf("Error: strtok() error");
+            printf("strtok() error\n");
             fclose(input_file);
             free_list(label_list);
             fclose(input_file);
             return NULL;
         }
-        if (strstr(line, ":") != NULL){ //LABEL FOUND
+        if (strstr(line, ":") != NULL){ // LABEL FOUND
             label = strtok(line, ":");
             insert_node(label_list, label, line_num);
-            str = strtok(NULL, " \t\r\n,:");
-            if (str == NULL) {
-                line_num--;
-            }
+            line_num--;
         }
     }
     fclose(input_file);
@@ -147,9 +147,16 @@ List* create_label_list(char* input_path){
 
 int calc_imm(char* imm_str, List* label_list){
     if ((imm_str[0] >= 'a' && imm_str[0] <= 'z') || (imm_str[0] >= 'A' && imm_str[0] <= 'Z')){ //If the first character of imm is a letter
-        return find(label_list, imm_str);
+        return find_node(label_list, imm_str);
     }
-    return atoi(imm_str);
+    return parse_num(imm_str);
+}
+
+int parse_num(char* num_string){
+    if (strstr(num_string, "0x") != NULL){ // Num is in hexadecimal
+        return (int)strtol(num_string, NULL, 0);
+    }
+    return strtol(num_string, NULL, 10);
 }
 
 
@@ -166,8 +173,11 @@ int assembler(char* input_path, char* output_path){
     int imm = 0;
     int instruction = 0;
     unsigned int mask = 0;
-    unsigned int line_counter = 65536;
     List* label_list = create_label_list(input_path);
+    int memory[MEMORY_SIZE] = {0};
+    int memory_index = 0;
+    int address = 0, data = 0;
+    int pointer = MEMORY_SIZE;
 
     input_file = fopen(input_path, "r");
     if (input_file == NULL){
@@ -183,89 +193,106 @@ int assembler(char* input_path, char* output_path){
         return -1;
     }
 
-
     // TODO: LABELS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    while (fgets(line, MAX_LINE_LEN, input_file) != NULL){
+    while (fgets(line, MAX_LINE_LEN, input_file) != NULL) {
+        if (line[0] == '\n'){
+            continue;
+        }
         str = strtok(line, " \t\r\n,");
-        if (str == NULL){
-            printf("Error: strtok() error");
+        if (str == NULL) {
+            printf("strtok() error\n");
             fclose(input_file);
             fclose(output_file);
             free_list(label_list);
             return -1;
         }
-        if (strstr(line, ":") != NULL){ //We found a label
+        if (strstr(str, ":") != NULL) { // We found a label
             str = strtok(NULL, " \t\r\n:,");
             if (str == NULL) {
                 continue;
             }
         }
+        if (strcmp(str, ".word") == 0) { // If command is "word"
+            str = strtok(NULL, " \t\r\n");
+            if (str == NULL) {
+                printf("strtok() error");
+                fclose(input_file);
+                fclose(output_file);
+                free_list(label_list);
+                return -1;
+            }
+            address = parse_num(str);
+            str = strtok(NULL, " \t\r\n");
+            if (str == NULL) {
+                printf("strtok() error");
+                fclose(input_file);
+                fclose(output_file);
+                free_list(label_list);
+                return -1;
+            }
+            data = parse_num(str);
+            memory[address] = data;
+        } else {
+            op_code = calc_opcode(str);
 
-        op_code = calc_opcode(str);
+            str = strtok(NULL, " \t\r\n,");
+            if (str == NULL) {
+                printf("strtok() error");
+                fclose(input_file);
+                fclose(output_file);
+                free_list(label_list);
+                return -1;
+            }
+            rd = calc_register(str);
+            str = strtok(NULL, " \t\r\n,");
+            if (str == NULL) {
+                printf("strtok() error");
+                fclose(input_file);
+                fclose(output_file);
+                free_list(label_list);
+                return -1;
+            }
+            rs = calc_register(str);
+            str = strtok(NULL, " \t\r\n,");
+            if (str == NULL) {
+                printf("strtok() error");
+                fclose(input_file);
+                fclose(output_file);
+                free_list(label_list);
+                return -1;
+            }
+            rt = calc_register(str);
+            str = strtok(NULL, " \t\r\n,");
+            if (str == NULL) {
+                printf("strtok() error");
+                fclose(input_file);
+                fclose(output_file);
+                free_list(label_list);
+                return -1;
+            }
 
-        if (op_code == HALT){ //If instruction is "halt"
-            fprintf(output_file, "f0000000\n");
-            line_counter--;
-            continue;
+            imm = calc_imm(str, label_list);
+
+            mask = 1;
+            for (int i = 0; i < 15; ++i) {
+                mask <<= 1;
+                mask++;
+            }
+
+            imm &= mask;
+
+            op_code <<= 28;
+            rd <<= 24;
+            rs <<= 20;
+            rt <<= 16;
+            instruction = op_code | rd | rs | rt | imm;
+            memory[memory_index] = instruction;
+            memory_index++;
         }
-
-        str = strtok(NULL, " \t\r\n,");
-        if (str == NULL){
-            printf("Error: strtok() error");
-            fclose(input_file);
-            fclose(output_file);
-            free_list(label_list);
-            return -1;
-        }
-        rd = calc_register(str);
-        str = strtok(NULL, " \t\r\n,");
-        if (str == NULL){
-            printf("Error: strtok() error");
-            fclose(input_file);
-            fclose(output_file);
-            free_list(label_list);
-            return -1;
-        }
-        rs = calc_register(str);
-        str = strtok(NULL, " \t\r\n,");
-        if (str == NULL){
-            printf("Error: strtok() error");
-            fclose(input_file);
-            fclose(output_file);
-            free_list(label_list);
-            return -1;
-        }
-        rt = calc_register(str);
-        str = strtok(NULL, " \t\r\n,");
-        if (str == NULL){
-            printf("Error: strtok() error");
-            fclose(input_file);
-            fclose(output_file);
-            free_list(label_list);
-            return -1;
-        }
-
-        imm = calc_imm(str, label_list);
-
-        mask = 1;
-        for (int i = 0; i < 15; ++i){
-            mask <<= 1;
-            mask ++;
-        }
-
-        imm &= mask;
-
-        op_code <<= 28;
-        rd <<= 24;
-        rs <<= 20;
-        rt <<= 16;
-        instruction = op_code | rd | rs | rt | imm;
-        fprintf(output_file, "%.8X\n", instruction);
-        line_counter--;
     }
-    while(line_counter != 0){
-        fprintf(output_file, "00000000\n");
-        line_counter--;
+
+    for (int i = 0; i < MEMORY_SIZE; ++i){
+        fprintf(output_file, "%.8X\n", memory[i]);
     }
 
     fclose(input_file);

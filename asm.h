@@ -9,6 +9,7 @@
 
 #define MAX_LINE_LEN 500
 #define MAX_LABEL_LEN 50
+#define MEMORY_SIZE 65536
 
 typedef enum opcodes{
     ADD, SUB, AND, OR,
@@ -33,5 +34,7 @@ int calc_register(char* str);
 List* create_label_list(char* input_path);
 
 int calc_imm(char* imm_str, List* label_list);
+
+int parse_num(char* num_string);
 
 #endif //ISA_ASM_H
