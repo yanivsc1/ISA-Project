@@ -18,12 +18,13 @@ Node* create_node(char* key, unsigned int value){
         perror("malloc() error");
         return NULL;
     }
+    node->next = NULL;
     node->value = value;
     node->key = key;
     return node;
 }
 
-int find(List* list, char* key){
+int find_node(List* list, char* key){
     if (list == NULL){
         return -1;
     }
