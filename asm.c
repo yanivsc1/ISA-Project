@@ -112,9 +112,9 @@ int calc_register(char* str){
 List* create_label_list(char* input_path){
     List* label_list;
     FILE* input_file;
-    char* str;
     char line[MAX_LINE_LEN];
-    char* label;
+    char* str = NULL;
+    char* label = NULL;
     unsigned int line_num = 0;
     input_file = fopen(input_path, "r");
     if (input_file == NULL){
@@ -127,18 +127,19 @@ List* create_label_list(char* input_path){
             continue;
         }
         line_num++;
-        str = strtok(line, " \t\r\n,");
-        if (str == NULL) {
+        str = strtok(line, " \t\r\n");
+        if (str == NULL){
             printf("strtok() error\n");
             fclose(input_file);
             free_list(label_list);
-            fclose(input_file);
             return NULL;
         }
-        if (strstr(line, ":") != NULL){ // LABEL FOUND
-            label = strtok(line, ":");
+        if (strstr(str, ":") != NULL){ //LABEL FOUND
+            label = str;
+            if (strtok(NULL, " \t\r\n") != NULL) {
+                line_num--;
+            }
             insert_node(label_list, label, line_num);
-            line_num--;
         }
     }
     fclose(input_file);
@@ -177,7 +178,6 @@ int assembler(char* input_path, char* output_path){
     int memory[MEMORY_SIZE] = {0};
     int memory_index = 0;
     int address = 0, data = 0;
-    int pointer = MEMORY_SIZE;
 
     input_file = fopen(input_path, "r");
     if (input_file == NULL){
@@ -193,7 +193,6 @@ int assembler(char* input_path, char* output_path){
         return -1;
     }
 
-    // TODO: LABELS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     while (fgets(line, MAX_LINE_LEN, input_file) != NULL) {
         if (line[0] == '\n'){
             continue;

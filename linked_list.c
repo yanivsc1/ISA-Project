@@ -1,6 +1,5 @@
 #include "linked_list.h"
 
-
 List* create_list(){
     List* list = (List*)malloc(sizeof(List));
     if (list == NULL){
@@ -14,13 +13,17 @@ List* create_list(){
 
 Node* create_node(char* key, unsigned int value){
     Node* node = (Node*)malloc(sizeof(Node));
+    char* new_key = (char*)malloc(sizeof(char) * (strlen(key)));
     if (node == NULL){
         perror("malloc() error");
         return NULL;
     }
     node->next = NULL;
     node->value = value;
-    node->key = key;
+    strcpy(new_key, key);
+
+    node->key = new_key;
+    node->key[strlen(new_key) - 1] = '\0';
     return node;
 }
 
@@ -62,6 +65,7 @@ void free_list(List* list){
     Node* temp = list->head;
     while (temp){
         list->head = temp->next;
+        free(temp->key);
         free(temp);
         temp = list->head;
     }
