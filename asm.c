@@ -123,7 +123,7 @@ List* create_label_list(char* input_path){
     }
     label_list = create_list();
     while (fgets(line, MAX_LINE_LEN, input_file) != NULL) {
-        if (line[0] == '\n'){
+        if (line[0] == '\n' || line[0] == '#'){
             continue;
         }
         line_num++;
@@ -134,9 +134,13 @@ List* create_label_list(char* input_path){
             free_list(label_list);
             return NULL;
         }
+        if (strcmp(str, ".word") == 0){
+            line_num--;
+            continue;
+        }
         if (strstr(str, ":") != NULL){ //LABEL FOUND
             label = str;
-            if (strtok(NULL, " \t\r\n") != NULL) {
+            if (strtok(NULL, " \t\r\n") == NULL) {
                 line_num--;
             }
             insert_node(label_list, label, line_num);
@@ -178,6 +182,7 @@ int assembler(char* input_path, char* output_path){
     int memory[MEMORY_SIZE] = {0};
     int memory_index = 0;
     int address = 0, data = 0;
+    int memin_length = 0;
 
     input_file = fopen(input_path, "r");
     if (input_file == NULL){
@@ -194,7 +199,7 @@ int assembler(char* input_path, char* output_path){
     }
 
     while (fgets(line, MAX_LINE_LEN, input_file) != NULL) {
-        if (line[0] == '\n'){
+        if (line[0] == '\n' || line[0] == '#'){
             continue;
         }
         str = strtok(line, " \t\r\n,");
@@ -290,7 +295,12 @@ int assembler(char* input_path, char* output_path){
         }
     }
 
-    for (int i = 0; i < MEMORY_SIZE; ++i){
+    for (memin_length = MEMORY_SIZE-1; memin_length > 0; --memin_length){
+        if (memory[memin_length] != 0){
+            break;
+        }
+    }
+    for (int i = 0; i <= memin_length; ++i){
         fprintf(output_file, "%.8X\n", memory[i]);
     }
 
