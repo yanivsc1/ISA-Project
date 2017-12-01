@@ -15,7 +15,10 @@ main(){
 	}
 }
 
+
+
 MAIN:
+limm $sp, $zero, $zero, 2048		# $sp = 2048
 limm $t0, $zero, $zero, 1		# $t0 = 1
 
 limm $t1, $zero, $zero, 12		# $t1 = 12
@@ -55,5 +58,6 @@ END_MAIN_FOR_1:
 lw $s0, $sp, $zero, 0			# restore $s0's original value 
 lw $s1, $sp, $zero, 4			# restore $s1's original value
 lw $s2, $sp, $zero, 8			# restore $s2's original value
-add $sp, $sp, $zero, 12			# restore stack pointer to original value
+limm $t0, $zero, $zero, 12		# $t0 = 12
+add $sp, $sp, $t0, 0			# restore stack pointer to original value
 halt $zero, $zero, $zero, 0		# finish

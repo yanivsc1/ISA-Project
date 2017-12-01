@@ -21,9 +21,9 @@ Node* create_node(char* key, unsigned int value){
     node->next = NULL;
     node->value = value;
     strcpy(new_key, key);
-
     node->key = new_key;
     node->key[strlen(new_key) - 1] = '\0';
+    node->key = new_key;
     return node;
 }
 
