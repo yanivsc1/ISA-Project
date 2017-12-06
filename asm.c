@@ -194,7 +194,7 @@ int assembler(char* input_path, char* output_path){
     }
 
     while (fgets(line, MAX_LINE_LEN, input_file) != NULL) {
-        if (line[0] == '\n'){
+        if (line[0] == '\n' || line[0] == '#'){
             continue;
         }
         str = strtok(line, " \t\r\n,");
